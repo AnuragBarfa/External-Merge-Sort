@@ -21,9 +21,11 @@ void ExtMergeSort :: firstPass(DiskFile &inputFile, MainMemory &memory){
 }
 
 void ExtMergeSort :: firstPass(DiskFile &inputFile, MainMemory &memory, int B){
-	vector <int> frames;
+	vector <int> frames;//stores index of the frames alloted from main memory
 	for(int i = 0; i < inputFile.totalPages; i = i + B){
 		frames.clear();
+		//load B pages to available B frames and store the those frames index
+		//make sure to handle if loadPage return -1 no frame can be assign 
 		for(int j = 0; (i + j < inputFile.totalPages) && (j < B); j++){
 			frames.push_back(memory.loadPage(inputFile, i + j));
 		}
