@@ -214,7 +214,7 @@ void ExtMergeSort :: Bmerge(DiskFile &inputFile, MainMemory &memory, int leftSta
 	DiskFile tempFile(finalRunSize);
 	int currPage = 0;
 	// int resFrame = memory.getEmptyFrame();
-	vector < vector <int> > frames(B/2, vector <int> (2));
+	vector < vector <int> > frames(B/2, vector <int> (2));//buffer of size two for each frame in main memmory
 	for(int i = 0; i < (B - 2)/2; i++){
 		if (leftStart + i*this->runSize < inputFile.totalPages)
 			frames[i][0] = memory.loadPage(inputFile, leftStart + i*this->runSize);
@@ -227,10 +227,10 @@ void ExtMergeSort :: Bmerge(DiskFile &inputFile, MainMemory &memory, int leftSta
 	}
 	frames[B/2 - 1][0] = memory.getEmptyFrame();
 	frames[B/2 - 1][1] = memory.getEmptyFrame();
-	vector <int> active(B/2, 0);
-	vector <int> indexes(B/2, 0);
-	int minm = INT_MAX;
-	int minindex = 0;
+	vector <int> active(B/2, 0);//out of two frames in buffer which one is currenlty active
+	vector <int> indexes(B/2, 0);//index which is not readed yet in frame whose index is stored at ith index of vector frames
+	int minm = INT_MAX;//current minimum value out of the unordered data left among all the frame having the data
+	int minindex = 0;//index in vector frames pointing to a frame having minimum value in current go out of unordered values 
 	cout << "frame  " <<  frames.size()<< endl;
 	for(;;){
 		minm = INT_MAX;
@@ -250,6 +250,7 @@ void ExtMergeSort :: Bmerge(DiskFile &inputFile, MainMemory &memory, int leftSta
 		memory.setVal(frames[B/2-1][active[B/2-1]], indexes[B/2-1], minm);
 		indexes[minindex]++;
 		if (indexes[minindex]%MEM_FRAME_SIZE == 0){
+			//if the minimum entry was the last entry of the page having minimum valueamong all
 			if (minindex*this->runSize + indexes[minindex]/MEM_FRAME_SIZE + 1>= inputFile.totalPages){
 				frames[minindex][active[minindex]] = memory.getEmptyFrame();
 			}
