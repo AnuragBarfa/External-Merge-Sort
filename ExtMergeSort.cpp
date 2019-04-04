@@ -30,27 +30,34 @@ void ExtMergeSort :: firstPass(DiskFile &inputFile, MainMemory &memory, int B){
 			frames.push_back(memory.loadPage(inputFile, i + j));
 		}
 		cout << "hello" << endl;
+		//trying to rearrange content of frame so that every frame is completly filled execpt one frame atmost
 		for(int j = 0; j < frames.size()-1; j++){
 			while (j < frames.size() - 1 && memory.getValidEntries(frames[j]) != MEM_FRAME_SIZE){
-				int temp = memory.getVal(frames[frames.size() -1], 0);
+				//this while loop try to fill current frame with the content of last frame if thier is some space available in current frame
+				int temp = memory.getVal(frames[frames.size() -1], 0);//if valid frame then contain value stored at index 0 of the frame
 				if (temp == -1){
+					//if last frame is notvalid(it's content) then remove it from the list of frames required
 					frames.resize(frames.size() - 1);
 					continue;
 				}
-				memory.setVal(frames[j], memory.getValidEntries(frames[j]), temp);
-				memory.invalidate(frames[frames.size()-1], 0);
+				memory.setVal(frames[j], memory.getValidEntries(frames[j]), temp);//put the value in current frame in available space
+				memory.invalidate(frames[frames.size()-1], 0);//invalidate the entry in last frame copied to current frame from lasst frame 
+				//frame is not invalidate after every intry of frame has been invalidate temp will never become -1 
 			}
 			cout << "hello1" << endl;
 			
 		}
 		cout <<" hello2" << endl; 
 		int num = 0;
-		int validentries = (frames.size()-1)*MEM_FRAME_SIZE + memory.getValidEntries(frames[frames.size() -1]);
+		int validentries = (frames.size()-1)*MEM_FRAME_SIZE + memory.getValidEntries(frames[frames.size() -1]);//total number of valid entries in main memory corresponding to B pages to be sorted
 		cout << validentries << endl;
 		while(num < validentries - 1){
-			int minindex = 0;
-			int minm = INT_MAX;
+			//put correct entry corresponding to index num in the final sorted order of data 
+			//selection sort procedure
+			int minindex = 0;//index corresponding to minimum value in the unordered data
+			int minm = INT_MAX;//minimum among the unorder data
 			for(int j = num; j < validentries; j++){
+				//to find the minimum in unordered data
 				if (memory.getVal(frames[j/MEM_FRAME_SIZE], j%MEM_FRAME_SIZE) < minm){
 					minm = memory.getVal(frames[j/MEM_FRAME_SIZE], j%MEM_FRAME_SIZE);
 					minindex = j;
@@ -58,11 +65,13 @@ void ExtMergeSort :: firstPass(DiskFile &inputFile, MainMemory &memory, int B){
 			}
 			cout << minm << " ";
 			if (minm == INT_MAX)
+				//when whole content of unordered data is INT_MAX or invalidentries then we are done no sorting left to be done
 				break;
 			swap(memory.data[frames[num/MEM_FRAME_SIZE]].arr[num%MEM_FRAME_SIZE], memory.data[frames[minindex/MEM_FRAME_SIZE]].arr[minindex%MEM_FRAME_SIZE]);
 			num++;
 		}
 		for(int j = 0; j < frames.size(); j++){
+			//should consider the cases when B page are not filled completly and lead to deacrese in required frame after arrangment than B so while writing back less pages will be writtten back so some invalid pages will exist and then should be considerd in second run
 			memory.writeFrame(inputFile, frames[j], i + j);
 			memory.freeFrame(frames[j]);
 		}
